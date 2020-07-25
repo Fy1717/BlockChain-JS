@@ -15,12 +15,24 @@ class Block {
         this.data = data;
         this.previousHash = previousHash;
         this.hash = this.calculateHash();
+        this.nonce = 0;
     }
 
     // Block un verileri ve bir önceki block un hash i kullanılarak
     // güvenlik anahtarı SHA256 algoritması kullanılarak hesaplanır
     calculateHash() {
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
+        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
+    }
+
+    // Kendi yarattığımız bloklara ayrt edici kimlik atıyoruz
+    // Difficult değeri kaç ise o sayıda hash in başına 0 ekledik
+    mineBlock(difficulty) {
+        while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join('0')) {
+            this.nonce++;
+            this.hash = this.calculateHash();
+        }
+
+        console.log('Block Mined: ' + this.hash);
     }
 }
 
@@ -30,6 +42,7 @@ class BlockChain {
     constructor() {
         // Zinciri tanımlayıp ilk block u yani genesisBlock u attık
         this.chain = [this.createGenesisBlock()];
+        this.difficulty = 2;
     }
 
     // İlk block u yaratan fonksiyondur
@@ -46,7 +59,7 @@ class BlockChain {
     addBlock(newBlock) {
         // Yeni block un previousHash attribute u, son block un hash i ne eşittir
         newBlock.previousHash = this.getLatestBlock().hash;
-        newBlock.hash = newBlock.calculateHash();
+        newBlock.mineBlock(this.difficulty);
         this.chain.push(newBlock);
     }
 
@@ -72,19 +85,48 @@ class BlockChain {
 // BlockChain den bir örnek yaratıp içerisine örnek blocklar ekledik 
 let fyCoin = new BlockChain();
 
+
+// ---------------------------------------------------------
+
 // Block verilerine contructor a uygun olarak index, time, data gönderdik
 // previousHash ve hash attributeleri addBlock fonksiyonu içerinde ayarlandı 
+
+/* 
 fyCoin.addBlock(new Block(1, '03/08/2019', {
     amount: 5
 }));
 
-fyCoin.addBlock(new Block(2, '24/0/2020', {
+fyCoin.addBlock(new Block(2, '24/08/2020', {
     amount: 7
 }));
+*/
 
+// ---------------------------------------------------------
+
+
+// ---------------------------------------------------------
 
 // Örnek BlockChain i console da görelim
 // console.log(JSON.stringify(fyCoin, null, 4));
 
+// ---------------------------------------------------------
+
+
+// ---------------------------------------------------------
+
 // BlockChain in güvenliğini kontrol edelim
-console.log('Is BlockChain Valid ? --> ' + fyCoin.isChainValid())
+//console.log('Is BlockChain Valid ? --> ' + fyCoin.isChainValid())
+
+// ---------------------------------------------------------
+
+
+
+console.log('Mining Block 1.. ');
+fyCoin.addBlock(new Block(1, '26/08/2020'), {
+    amount: 10
+})
+
+console.log('Mining Block 2.. ');
+fyCoin.addBlock(new Block(2, '26/08/2020'), {
+    amount: 8
+})
